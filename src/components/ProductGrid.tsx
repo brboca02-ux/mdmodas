@@ -122,6 +122,17 @@ export function ProductGrid({
           </div>
         ))}
       </div>
+      {paginate && total > items.length && (
+        <div className="mt-10 flex justify-center">
+          <button
+            type="button"
+            onClick={() => setVisible((v) => v + first)}
+            className="rounded-full border border-foreground px-8 py-3 text-sm font-medium hover:bg-foreground hover:text-background transition-colors"
+          >
+            Carregar mais ({total - items.length})
+          </button>
+        </div>
+      )}
     </div>
   );
 }
