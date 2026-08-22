@@ -48,17 +48,23 @@ export function ProductGrid({
     enabled: loaded && !hasSupabaseProducts,
   });
 
-  const items = useMemo<ShopifyProduct[]>(() => {
+  const { items, total } = useMemo<{ items: ShopifyProduct[]; total: number }>(() => {
     const q = (query ?? "").toLowerCase();
+    const cat = (category ?? "").toLowerCase();
     const active = products.filter((p) => p.status === "ativo");
-    let filtered = q
-      ? active.filter(
-          (p) =>
-            p.name.toLowerCase().includes(q) ||
-            p.category_id.toLowerCase().includes(q) ||
-            p.description.toLowerCase().includes(q),
-        )
-      : active;
+
+    // Filtro real por categoria (comparação direta com category_id).
+    let filtered = cat ? active.filter((p) => (p.category_id ?? "").toLowerCase() === cat) : active;
+
+    // Busca textual continua independente do filtro de categoria.
+    if (q) {
+      filtered = filtered.filter(
+        (p) =>
+          p.name.toLowerCase().includes(q) ||
+          p.category_id.toLowerCase().includes(q) ||
+          p.description.toLowerCase().includes(q),
+      );
+    }
 
     if (sortKey === "CREATED_AT") {
       filtered = [...filtered].sort((a, b) => (reverse ? b.created_at.localeCompare(a.created_at) : a.created_at.localeCompare(b.created_at)));
@@ -69,9 +75,10 @@ export function ProductGrid({
     }
 
     const fromSupabase = filtered.slice(0, first).map(productToShopify);
-    if (fromSupabase.length > 0) return fromSupabase;
-    return shopifyData ?? [];
-  }, [products, query, first, sortKey, reverse, shopifyData]);
+    if (fromSupabase.length > 0) return { items: fromSupabase, total: filtered.length };
+    const fallback = shopifyData ?? [];
+    return { items: fallback, total: fallback.length };
+  }, [products, query, category, first, sortKey, reverse, shopifyData]);
 
   if ((!loaded && loading) || (!loaded && items.length === 0)) {
     return (
