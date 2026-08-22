@@ -137,7 +137,7 @@ function ColecaoPage() {
 
       <div className="max-w-[1400px] mx-auto px-6 lg:px-10 py-12">
         <h2 className="sr-only">Produtos</h2>
-        <ProductGrid query={query} />
+        <ProductGrid query={query} category={category} first={24} paginate showCount />
       </div>
     </div>
   );
