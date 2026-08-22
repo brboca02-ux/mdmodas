@@ -64,7 +64,10 @@ function ColecaoPage() {
   const h1 = seo?.h1 ?? (activeCat ? activeCat.name : safe ? safe.charAt(0).toUpperCase() + safe.slice(1) : DEFAULT_SEO.h1);
   const eyebrow = seo?.eyebrow ?? DEFAULT_SEO.eyebrow;
   const intro = seo?.intro ?? DEFAULT_SEO.intro;
-  const query = safe || undefined;
+  // Slug conhecido → filtro real por categoria. Caso contrário, busca textual.
+  const isKnownCategory = Boolean(activeCat) || Boolean(seo);
+  const category = safe && isKnownCategory ? safe : undefined;
+  const query = safe && !isKnownCategory ? safe : undefined;
 
   const chip = (active: boolean) =>
     `px-4 py-2 rounded-full text-sm border transition-colors ${
