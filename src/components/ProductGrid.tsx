@@ -38,9 +38,32 @@ export function ProductGrid({
   const loading = useProductsStore((s) => s.loading);
   const loaded = useProductsStore((s) => s.loaded);
 
-  const [visible, setVisible] = useState(first);
-  useEffect(() => { setVisible(first); }, [first, query, category, sortKey, reverse]);
+  // Chave estável do "contexto" da listagem: muda quando o filtro muda.
+  const pageKey = `pg:${category ?? ""}|${query ?? ""}|${sortKey ?? ""}|${reverse ? 1 : 0}|${first}`;
+
+  const readSaved = (key: string, fallback: number) => {
+    if (typeof window === "undefined") return fallback;
+    const raw = window.sessionStorage.getItem(key);
+    const n = raw ? parseInt(raw, 10) : NaN;
+    return Number.isFinite(n) && n >= fallback ? n : fallback;
+  };
+
+  const [visible, setVisible] = useState(() => (paginate ? readSaved(pageKey, first) : first));
+
+  // Ao trocar de filtro/categoria, restaura o offset salvo daquele contexto
+  // (ou volta ao início). Mantém a paginação consistente após recarregar.
+  useEffect(() => {
+    setVisible(paginate ? readSaved(pageKey, first) : first);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pageKey, first, paginate]);
+
+  useEffect(() => {
+    if (!paginate || typeof window === "undefined") return;
+    window.sessionStorage.setItem(pageKey, String(visible));
+  }, [pageKey, visible, paginate]);
+
   const limit = paginate ? visible : first;
+
 
 
   const hasSupabaseProducts = products.some((p) => p.status === "ativo");
