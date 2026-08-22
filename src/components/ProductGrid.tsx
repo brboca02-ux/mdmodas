@@ -83,7 +83,7 @@ export function ProductGrid({
     if (fromSupabase.length > 0) return { items: fromSupabase, total: filtered.length };
     const fallback = shopifyData ?? [];
     return { items: fallback, total: fallback.length };
-  }, [products, query, category, first, sortKey, reverse, shopifyData]);
+  }, [products, query, category, limit, sortKey, reverse, shopifyData]);
 
   if ((!loaded && loading) || (!loaded && items.length === 0)) {
     return (
