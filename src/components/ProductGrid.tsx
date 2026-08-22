@@ -94,22 +94,29 @@ export function ProductGrid({
     return emptyHint ? (
       <div className="py-16 text-center border border-dashed border-border rounded-md">
         <p className="font-display text-2xl mb-2">
-          {query ? "Nenhum produto encontrado" : "Coleção em preparação"}
+          {query || category ? "Nenhum produto encontrado" : "Coleção em preparação"}
         </p>
         <p className="text-sm text-muted-foreground max-w-md mx-auto px-4">
-          {query ? "Tente outro termo, categoria ou cor." : "Em breve novidades. Volte mais tarde ou fale com a gente no WhatsApp."}
+          {query || category ? "Tente outro termo, categoria ou cor." : "Em breve novidades. Volte mais tarde ou fale com a gente no WhatsApp."}
         </p>
       </div>
     ) : null;
   }
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-3 gap-y-8 sm:gap-x-6 sm:gap-y-10 items-stretch">
-      {items.map((p) => (
-        <div key={p.node.id} className="flex">
-          <ProductCard product={p} />
-        </div>
-      ))}
+    <div>
+      {showCount && (
+        <p className="mb-5 text-sm text-muted-foreground">
+          {total} {total === 1 ? "peça encontrada" : "peças encontradas"}
+        </p>
+      )}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-3 gap-y-8 sm:gap-x-6 sm:gap-y-10 items-stretch">
+        {items.map((p) => (
+          <div key={p.node.id} className="flex">
+            <ProductCard product={p} />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
