@@ -79,7 +79,7 @@ export function ProductGrid({
       filtered = [...filtered].sort((a, b) => (reverse ? b.name.localeCompare(a.name) : a.name.localeCompare(b.name)));
     }
 
-    const fromSupabase = filtered.slice(0, first).map(productToShopify);
+    const fromSupabase = filtered.slice(0, limit).map(productToShopify);
     if (fromSupabase.length > 0) return { items: fromSupabase, total: filtered.length };
     const fallback = shopifyData ?? [];
     return { items: fallback, total: fallback.length };
