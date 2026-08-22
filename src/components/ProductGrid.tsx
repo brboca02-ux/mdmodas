@@ -31,12 +31,17 @@ async function fetchShopify({ query, first = 12, sortKey, reverse }: FetchOpts):
 }
 
 export function ProductGrid({
-  query, category, first = 12, sortKey, reverse, emptyHint = true, showCount = false,
-}: { query?: string; category?: string; first?: number; sortKey?: FetchOpts["sortKey"]; reverse?: boolean; emptyHint?: boolean; showCount?: boolean }) {
+  query, category, first = 12, sortKey, reverse, emptyHint = true, showCount = false, paginate = false,
+}: { query?: string; category?: string; first?: number; sortKey?: FetchOpts["sortKey"]; reverse?: boolean; emptyHint?: boolean; showCount?: boolean; paginate?: boolean }) {
   // Fonte primária: Supabase (via store). Reativo: re-renderiza ao hidratar/CRUD.
   const products = useProductsStore((s) => s.products);
   const loading = useProductsStore((s) => s.loading);
   const loaded = useProductsStore((s) => s.loaded);
+
+  const [visible, setVisible] = useState(first);
+  useEffect(() => { setVisible(first); }, [first, query, category, sortKey, reverse]);
+  const limit = paginate ? visible : first;
+
 
   const hasSupabaseProducts = products.some((p) => p.status === "ativo");
 
