@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { PRODUCTS_QUERY, storefrontApiRequest, type ShopifyProduct } from "@/lib/shopify";
 import { useProductsStore } from "@/stores/productsStore";
@@ -31,12 +31,17 @@ async function fetchShopify({ query, first = 12, sortKey, reverse }: FetchOpts):
 }
 
 export function ProductGrid({
-  query, first = 12, sortKey, reverse, emptyHint = true,
-}: { query?: string; first?: number; sortKey?: FetchOpts["sortKey"]; reverse?: boolean; emptyHint?: boolean }) {
+  query, category, first = 12, sortKey, reverse, emptyHint = true, showCount = false, paginate = false,
+}: { query?: string; category?: string; first?: number; sortKey?: FetchOpts["sortKey"]; reverse?: boolean; emptyHint?: boolean; showCount?: boolean; paginate?: boolean }) {
   // Fonte primária: Supabase (via store). Reativo: re-renderiza ao hidratar/CRUD.
   const products = useProductsStore((s) => s.products);
   const loading = useProductsStore((s) => s.loading);
   const loaded = useProductsStore((s) => s.loaded);
+
+  const [visible, setVisible] = useState(first);
+  useEffect(() => { setVisible(first); }, [first, query, category, sortKey, reverse]);
+  const limit = paginate ? visible : first;
+
 
   const hasSupabaseProducts = products.some((p) => p.status === "ativo");
 
@@ -48,17 +53,23 @@ export function ProductGrid({
     enabled: loaded && !hasSupabaseProducts,
   });
 
-  const items = useMemo<ShopifyProduct[]>(() => {
+  const { items, total } = useMemo<{ items: ShopifyProduct[]; total: number }>(() => {
     const q = (query ?? "").toLowerCase();
+    const cat = (category ?? "").toLowerCase();
     const active = products.filter((p) => p.status === "ativo");
-    let filtered = q
-      ? active.filter(
-          (p) =>
-            p.name.toLowerCase().includes(q) ||
-            p.category_id.toLowerCase().includes(q) ||
-            p.description.toLowerCase().includes(q),
-        )
-      : active;
+
+    // Filtro real por categoria (comparação direta com category_id).
+    let filtered = cat ? active.filter((p) => (p.category_id ?? "").toLowerCase() === cat) : active;
+
+    // Busca textual continua independente do filtro de categoria.
+    if (q) {
+      filtered = filtered.filter(
+        (p) =>
+          p.name.toLowerCase().includes(q) ||
+          p.category_id.toLowerCase().includes(q) ||
+          p.description.toLowerCase().includes(q),
+      );
+    }
 
     if (sortKey === "CREATED_AT") {
       filtered = [...filtered].sort((a, b) => (reverse ? b.created_at.localeCompare(a.created_at) : a.created_at.localeCompare(b.created_at)));
@@ -68,10 +79,11 @@ export function ProductGrid({
       filtered = [...filtered].sort((a, b) => (reverse ? b.name.localeCompare(a.name) : a.name.localeCompare(b.name)));
     }
 
-    const fromSupabase = filtered.slice(0, first).map(productToShopify);
-    if (fromSupabase.length > 0) return fromSupabase;
-    return shopifyData ?? [];
-  }, [products, query, first, sortKey, reverse, shopifyData]);
+    const fromSupabase = filtered.slice(0, limit).map(productToShopify);
+    if (fromSupabase.length > 0) return { items: fromSupabase, total: filtered.length };
+    const fallback = shopifyData ?? [];
+    return { items: fallback, total: fallback.length };
+  }, [products, query, category, limit, sortKey, reverse, shopifyData]);
 
   if ((!loaded && loading) || (!loaded && items.length === 0)) {
     return (
@@ -87,22 +99,40 @@ export function ProductGrid({
     return emptyHint ? (
       <div className="py-16 text-center border border-dashed border-border rounded-md">
         <p className="font-display text-2xl mb-2">
-          {query ? "Nenhum produto encontrado" : "Coleção em preparação"}
+          {query || category ? "Nenhum produto encontrado" : "Coleção em preparação"}
         </p>
         <p className="text-sm text-muted-foreground max-w-md mx-auto px-4">
-          {query ? "Tente outro termo, categoria ou cor." : "Em breve novidades. Volte mais tarde ou fale com a gente no WhatsApp."}
+          {query || category ? "Tente outro termo, categoria ou cor." : "Em breve novidades. Volte mais tarde ou fale com a gente no WhatsApp."}
         </p>
       </div>
     ) : null;
   }
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-3 gap-y-8 sm:gap-x-6 sm:gap-y-10 items-stretch">
-      {items.map((p) => (
-        <div key={p.node.id} className="flex">
-          <ProductCard product={p} />
+    <div>
+      {showCount && (
+        <p className="mb-5 text-sm text-muted-foreground">
+          {total} {total === 1 ? "peça encontrada" : "peças encontradas"}
+        </p>
+      )}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-3 gap-y-8 sm:gap-x-6 sm:gap-y-10 items-stretch">
+        {items.map((p) => (
+          <div key={p.node.id} className="flex">
+            <ProductCard product={p} />
+          </div>
+        ))}
+      </div>
+      {paginate && total > items.length && (
+        <div className="mt-10 flex justify-center">
+          <button
+            type="button"
+            onClick={() => setVisible((v) => v + first)}
+            className="rounded-full border border-foreground px-8 py-3 text-sm font-medium hover:bg-foreground hover:text-background transition-colors"
+          >
+            Carregar mais ({total - items.length})
+          </button>
         </div>
-      ))}
+      )}
     </div>
   );
 }
