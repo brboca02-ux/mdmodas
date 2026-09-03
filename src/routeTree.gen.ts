@@ -14,6 +14,7 @@ import { Route as TermosRouteImport } from './routes/termos'
 import { Route as SobreRouteImport } from './routes/sobre'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
+import { Route as LojaRouteImport } from './routes/loja'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ColecaoRouteImport } from './routes/colecao'
@@ -68,6 +69,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const PrivacidadeRoute = PrivacidadeRouteImport.update({
   id: '/privacidade',
   path: '/privacidade',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LojaRoute = LojaRouteImport.update({
+  id: '/loja',
+  path: '/loja',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -229,6 +235,7 @@ export interface FileRoutesByFullPath {
   '/colecao': typeof ColecaoRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
+  '/loja': typeof LojaRoute
   '/privacidade': typeof PrivacidadeRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sobre': typeof SobreRoute
@@ -265,6 +272,7 @@ export interface FileRoutesByTo {
   '/colecao': typeof ColecaoRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
+  '/loja': typeof LojaRoute
   '/privacidade': typeof PrivacidadeRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sobre': typeof SobreRoute
@@ -303,6 +311,7 @@ export interface FileRoutesById {
   '/colecao': typeof ColecaoRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
+  '/loja': typeof LojaRoute
   '/privacidade': typeof PrivacidadeRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sobre': typeof SobreRoute
@@ -341,6 +350,7 @@ export interface FileRouteTypes {
     | '/colecao'
     | '/dashboard'
     | '/login'
+    | '/loja'
     | '/privacidade'
     | '/sitemap.xml'
     | '/sobre'
@@ -377,6 +387,7 @@ export interface FileRouteTypes {
     | '/colecao'
     | '/dashboard'
     | '/login'
+    | '/loja'
     | '/privacidade'
     | '/sitemap.xml'
     | '/sobre'
@@ -414,6 +425,7 @@ export interface FileRouteTypes {
     | '/colecao'
     | '/dashboard'
     | '/login'
+    | '/loja'
     | '/privacidade'
     | '/sitemap.xml'
     | '/sobre'
@@ -452,6 +464,7 @@ export interface RootRouteChildren {
   ColecaoRoute: typeof ColecaoRoute
   DashboardRoute: typeof DashboardRoute
   LoginRoute: typeof LoginRoute
+  LojaRoute: typeof LojaRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SobreRoute: typeof SobreRoute
@@ -516,6 +529,13 @@ declare module '@tanstack/react-router' {
       path: '/privacidade'
       fullPath: '/privacidade'
       preLoaderRoute: typeof PrivacidadeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/loja': {
+      id: '/loja'
+      path: '/loja'
+      fullPath: '/loja'
+      preLoaderRoute: typeof LojaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -750,6 +770,7 @@ const rootRouteChildren: RootRouteChildren = {
   ColecaoRoute: ColecaoRoute,
   DashboardRoute: DashboardRoute,
   LoginRoute: LoginRoute,
+  LojaRoute: LojaRoute,
   PrivacidadeRoute: PrivacidadeRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SobreRoute: SobreRoute,
