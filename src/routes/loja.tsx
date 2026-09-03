@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useEffect } from 'react';
-import Breadcrumbs from '@/components/Breadcrumbs';
+import { Breadcrumbs } from '@/components/Breadcrumbs';
 
 declare global {
   interface Window {
