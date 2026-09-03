@@ -19,7 +19,7 @@ const LOCATOR_CONFIG = {
         {
           label: 'WhatsApp da loja',
           defaultUrl:
-            'https://wa.me/5547999999999?text=' +
+            'https://wa.me/5547984468103?text=' +
             encodeURIComponent('Olá! Quero falar com a MD Modas sobre retirada de pedido.'),
         },
       ],
@@ -105,8 +105,8 @@ function LojaPage() {
     <div className="min-h-screen bg-background">
       <Breadcrumbs
         items={[
-          { label: 'Início', to: '/' },
-          { label: 'Nossa Loja', to: '/loja' },
+          { name: 'Início', href: '/' },
+          { name: 'Nossa Loja' },
         ]}
       />
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-10 py-6">
