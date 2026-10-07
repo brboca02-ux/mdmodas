@@ -1,133 +1,61 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { MapPin, MessageCircle, Navigation } from 'lucide-react';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
+import { Button } from '@/components/ui/button';
+import { STORE_INFO, buildWhatsAppLink } from '@/lib/shopify';
 
-declare global {
-  interface Window {
-    __locatorConfigured?: boolean;
-  }
-}
-
-const LOCATOR_CONFIG = {
-  locations: [
-    {
-      title: 'MD Modas',
-      address1: 'Rua Santa Luzia, 550',
-      address2: 'Aventureiro, Joinville - SC, Brasil',
-      coords: { lat: -26.2694, lng: -48.8077 },
-      actions: [
-        {
-          label: 'WhatsApp da loja',
-          defaultUrl:
-            'https://wa.me/5547984468103?text=' +
-            encodeURIComponent('Olá! Quero falar com a MD Modas sobre retirada de pedido.'),
-        },
-      ],
-    },
-  ],
-  mapOptions: {
-    center: { lat: -26.2694, lng: -48.8077 },
-    fullscreenControl: true,
-    mapTypeControl: false,
-    streetViewControl: false,
-    zoom: 15,
-    zoomControl: true,
-    maxZoom: 17,
-    mapId: '',
-  },
-  mapsApiKey: import.meta.env.VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY ?? '',
-  capabilities: {
-    input: true,
-    autocomplete: true,
-    directions: false,
-    distanceMatrix: true,
-    details: false,
-    actions: true,
-  },
-};
+const STORE_ADDRESS = `${STORE_INFO.street}, ${STORE_INFO.city}, ${STORE_INFO.region}, Brasil`;
+const DIRECTIONS_URL = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(STORE_ADDRESS)}`;
 
 export const Route = createFileRoute('/loja')({
   head: () => ({
     meta: [
       { title: 'Nossa Loja em Joinville | MD Modas' },
-      {
-        name: 'description',
-        content:
-          'Visite a MD Modas em Joinville: Rua Santa Luzia, 550 – Aventureiro. Veja no mapa como chegar, calcule a distância e fale conosco pelo WhatsApp.',
-      },
+      { name: 'description', content: 'Visite a MD Modas na Rua Santa Luzia, 550, Aventureiro, Joinville. Veja a localização no Google Maps e trace sua rota até a loja.' },
       { property: 'og:title', content: 'Nossa Loja em Joinville | MD Modas' },
-      {
-        property: 'og:description',
-        content: 'MD Modas: Rua Santa Luzia, 550 – Aventureiro, Joinville - SC. Veja como chegar no mapa.',
-      },
+      { property: 'og:description', content: 'Encontre a MD Modas: Rua Santa Luzia, 550, Aventureiro, Joinville - SC. Veja o mapa e como chegar.' },
       { property: 'og:type', content: 'website' },
       { name: 'twitter:card', content: 'summary' },
     ],
+    links: [{ rel: 'canonical', href: 'https://mdmoda.com.br/loja' }],
   }),
   component: LojaPage,
 });
 
 function LojaPage() {
+  // The managed browser key only permits Lovable domains. The address-based
+  // public embed remains usable on the store's custom domain, without Places.
+  const [mapUrl, setMapUrl] = useState(STORE_INFO.mapsEmbed);
   useEffect(() => {
     const key = import.meta.env.VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY;
-    if (!key) return;
-
-    // Extended Component Library (store locator web component)
-    if (!document.querySelector('script[data-gmpx-lib]')) {
-      const lib = document.createElement('script');
-      lib.type = 'module';
-      lib.src =
-        'https://ajax.googleapis.com/ajax/libs/@googlemaps/extended-component-library/0.6.15/index.min.js';
-      lib.setAttribute('data-gmpx-lib', '1');
-      document.head.appendChild(lib);
+    const allowedHost = /\.(lovable\.app|lovableproject\.com)$/.test(window.location.hostname);
+    if (key && allowedHost) {
+      setMapUrl(`https://www.google.com/maps/embed/v1/place?key=${encodeURIComponent(key)}&q=${encodeURIComponent(STORE_ADDRESS)}&language=pt-BR`);
     }
-
-    const configTimer = window.setInterval(() => {
-      const locator = document.querySelector('gmpx-store-locator') as
-        | (HTMLElement & { configureFromQuickBuilder?: (cfg: unknown) => void })
-        | null;
-      if (!locator) return;
-      const loader = document.querySelector('gmpx-api-loader');
-      if (loader && !loader.getAttribute('key')) loader.setAttribute('key', key);
-      Promise.resolve(customElements.whenDefined('gmpx-store-locator')).then(() => {
-        if (!window.__locatorConfigured && locator.configureFromQuickBuilder) {
-          locator.configureFromQuickBuilder(LOCATOR_CONFIG);
-          window.__locatorConfigured = true;
-        }
-        window.clearInterval(configTimer);
-      });
-    }, 500);
-
-    return () => window.clearInterval(configTimer);
   }, []);
 
   return (
-    <div className="min-h-screen bg-background">
-      <Breadcrumbs
-        items={[
-          { name: 'Início', href: '/' },
-          { name: 'Nossa Loja' },
-        ]}
-      />
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-10 py-6">
-        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Nossa Loja</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Rua Santa Luzia, 550 – Aventureiro, Joinville - SC. Busque seu endereço no mapa para
-          calcular a distância até a loja.
-        </p>
-        <div
-          className="mt-6 rounded-xl overflow-hidden border border-border"
-          style={{ height: '70vh', minHeight: 420 }}
-        >
-          {/* @ts-expect-error web components */}
-          <gmpx-api-loader
-            key={import.meta.env.VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY ?? ''}
-            solution-channel="GMP_QB_locatorplus_v11_cABDF"
-          />
-          {/* @ts-expect-error web components */}
-          <gmpx-store-locator style={{ width: '100%', height: '100%' }} />
+    <main className="min-h-screen bg-background">
+      <Breadcrumbs items={[{ name: 'Início', href: '/' }, { name: 'Nossa Loja' }]} />
+      <section className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-10 py-8">
+        <h1 className="font-display text-3xl font-bold text-foreground">Nossa Loja — MD Modas</h1>
+        <div className="mt-8 grid gap-6 lg:grid-cols-[320px_1fr]">
+          <div className="space-y-5">
+            <h2 className="text-xl font-semibold">MD Modas em Joinville</h2>
+            <p className="flex items-start gap-3 text-muted-foreground">
+              <MapPin className="mt-1 h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
+              <span>{STORE_INFO.street}<br />{STORE_INFO.city}/{STORE_INFO.region}<br />CEP {STORE_INFO.postalCode}</span>
+            </p>
+            <p className="text-sm text-muted-foreground">{STORE_INFO.phone}</p>
+            <div className="flex flex-wrap gap-3 lg:flex-col lg:items-start">
+              <Button asChild><a href={DIRECTIONS_URL} target="_blank" rel="noopener noreferrer"><Navigation className="h-4 w-4" />Como chegar</a></Button>
+              <Button variant="outline" asChild><a href={buildWhatsAppLink('Olá! Quero falar com a MD Modas sobre uma visita à loja.')} target="_blank" rel="noopener noreferrer"><MessageCircle className="h-4 w-4" />WhatsApp da loja</a></Button>
+            </div>
+          </div>
+          <iframe title="Localização da MD Modas — Rua Santa Luzia, 550, Joinville" src={mapUrl} className="h-[480px] w-full border-0 sm:h-[600px]" loading="lazy" referrerPolicy="no-referrer-when-downgrade" allowFullScreen />
         </div>
-      </div>
-    </div>
+      </section>
+    </main>
   );
 }
