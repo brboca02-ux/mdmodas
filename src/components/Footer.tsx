@@ -34,7 +34,7 @@ export function Footer() {
           <h3 className={COL_TITLE}>Institucional</h3>
           <ul className="space-y-3">
             <li><Link to="/sobre" className={LINK}>Sobre Nós</Link></li>
-            <li><a href="#loja" className={LINK}>Nossa Loja</a></li>
+            <li><Link to="/loja" className={LINK}>Nossa Loja</Link></li>
             <li>
               <a href={buildWhatsAppLink("Olá MD Modas, gostaria de falar com vocês.")} target="_blank" rel="noopener noreferrer" className={LINK}>
                 Contato
