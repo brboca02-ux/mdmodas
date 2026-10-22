@@ -104,7 +104,7 @@ export function CardBrickPayment({ amount, payerEmail, onSubmit, disabled }: Pro
               },
               hidePaymentButton: false,
             },
-            paymentMethods: { maxInstallments: 12 },
+            paymentMethods: { maxInstallments: 2 },
           },
           callbacks: {
             onReady: () => setReady(true),

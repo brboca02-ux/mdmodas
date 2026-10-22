@@ -82,7 +82,7 @@ export const createMpPreference = createServerFn({ method: "POST" })
       notification_url: `${data.siteUrl}/api/public/payment-webhook`,
       payment_methods: {
         excluded_payment_types: excludedTypes,
-        installments: 12,
+        installments: 2,
         ...(data.method === "pix" ? { default_payment_method_id: "pix" } : {}),
       },
       ...(data.method === "pix"

@@ -10,6 +10,7 @@ import { productToShopify } from "@/lib/mockProducts";
 import { Loader2, ShieldCheck, Truck, RefreshCcw, MapPin, MessageCircle, Flame, X, ChevronLeft, ChevronRight, Check } from "lucide-react";
 import { buildSrcSet, PDP_SIZES, BLUR_PLACEHOLDER } from "@/lib/image";
 import { RelatedProducts } from "@/components/RelatedProducts";
+import { MAX_INSTALLMENTS, installmentValue, pixDiscount } from "@/lib/paymentRules";
 
 export const Route = createFileRoute("/produto/$handle")({
   head: ({ params }) => {
@@ -419,7 +420,7 @@ function ProductPage() {
             </p>
             {selected && (
               <p className="text-sm text-muted-foreground mt-1">
-                ou 4x de {formatPrice(parseFloat(selected.price.amount) / 4, selected.price.currencyCode)} sem juros · <span className="text-[#D4AF37] font-semibold">10% off no Pix</span>
+                ou {MAX_INSTALLMENTS}x de {formatPrice(installmentValue(parseFloat(selected.price.amount)), selected.price.currencyCode)} sem juros · <span className="text-[#D4AF37] font-semibold">{formatPrice(parseFloat(selected.price.amount) - pixDiscount(parseFloat(selected.price.amount)), selected.price.currencyCode)} no Pix (5% off)</span>
               </p>
             )}
             <div className="mt-2 flex flex-wrap items-center gap-2">
