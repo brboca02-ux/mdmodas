@@ -6,6 +6,7 @@ import { z } from "zod";
 import { useCartStore } from "@/stores/cartStore";
 import { useAuth } from "@/hooks/useAuth";
 import { formatPrice } from "@/lib/shopify";
+import { MAX_INSTALLMENTS, installmentValue, pixDiscount } from "@/lib/paymentRules";
 import { shipping, type ShippingQuote } from "@/lib/integrations/shipping";
 import { payment, type PaymentMethod } from "@/lib/integrations/payment";
 import { lookupCep, formatCep } from "@/lib/integrations/viacep";
