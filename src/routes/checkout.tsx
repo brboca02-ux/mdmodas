@@ -6,6 +6,7 @@ import { z } from "zod";
 import { useCartStore } from "@/stores/cartStore";
 import { useAuth } from "@/hooks/useAuth";
 import { formatPrice } from "@/lib/shopify";
+import { MAX_INSTALLMENTS, installmentValue, pixDiscount } from "@/lib/paymentRules";
 import { shipping, type ShippingQuote } from "@/lib/integrations/shipping";
 import { payment, type PaymentMethod } from "@/lib/integrations/payment";
 import { lookupCep, formatCep } from "@/lib/integrations/viacep";
@@ -113,7 +114,8 @@ function CheckoutPage() {
   const itemsCount = items.reduce((s, i) => s + i.quantity, 0);
   const selectedQuote = quotes.find((q) => q.code === shippingCode);
   const shippingCost = selectedQuote?.price ?? 0;
-  const total = subtotal + shippingCost;
+  const discountPix = paymentMethod === "pix" ? pixDiscount(subtotal) : 0;
+  const total = subtotal + shippingCost - discountPix;
 
   // pré-preenche email/nome do usuário logado
   useEffect(() => {
@@ -637,7 +639,13 @@ function CheckoutPage() {
                     muted
                   />
                 )}
+                {discountPix > 0 && (
+                  <Row label="Desconto Pix (5%)" value={"− " + formatPrice(discountPix, "BRL")} />
+                )}
                 <Row label="Total" value={formatPrice(total, "BRL")} bold />
+                <p className="text-xs text-muted-foreground">
+                  Pix: {formatPrice(subtotal - pixDiscount(subtotal) + shippingCost, "BRL")} (5% off) · Cartão: até {MAX_INSTALLMENTS}x de {formatPrice(installmentValue(subtotal + shippingCost), "BRL")} sem juros
+                </p>
               </div>
               <button
                 onClick={handleSubmit}

@@ -20,7 +20,7 @@ const cardInput = z.object({
   amount: z.number().positive(),
   siteUrl: z.string().url(),
   token: z.string().min(1),
-  installments: z.number().int().positive(),
+  installments: z.number().int().positive().max(2, "Parcelamento máximo: 2x"),
   paymentMethodId: z.string().min(1),
   issuerId: z.string().optional(),
   payer: z.object({
